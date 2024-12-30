@@ -1,5 +1,6 @@
 # java-dsa
-# string basic problem 1
+# string basic problem 1 (reverse the string )
+
 class Solution {
     public void reverseString(char[] s) {
        int left=0;
