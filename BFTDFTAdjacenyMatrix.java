@@ -1,5 +1,5 @@
 import java.util.*;
-class BFT {
+class BFTDFTAdjacenyMatrix{
        static void bfs(int[][] adj ,int s, boolean[] visited) {
            Queue<Integer> q= new LinkedList<>();
            visited[s]=true;
