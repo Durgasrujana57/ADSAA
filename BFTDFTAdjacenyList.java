@@ -1,5 +1,5 @@
 import java.util.*;
-public class BFTDFT {
+public class BFTDFTAdjacenyList {
       private static void BFT(List<List<Integer>>adj) {
          boolean[] visited= new boolean[adj.size()];
          for(int i=0;i<adj.size();i++) {
