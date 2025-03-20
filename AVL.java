@@ -1,3 +1,5 @@
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Scanner;
 
 class Node {
@@ -21,10 +23,10 @@ class Node {
     }
 }
 
-class ConstructAVLTree {
+class ConstructAvlTree {
     private Node root;
 
-    public ConstructAVLTree() {
+    public ConstructAvlTree() {
         root = null;
     }
 
@@ -32,7 +34,7 @@ class ConstructAVLTree {
         root = insert(root, value);
     }
 
-    private int getHeight(Node node) {
+    public int getHeight(Node node) {
         return node == null ? -1 : node.h;
     }
 
@@ -59,10 +61,65 @@ class ConstructAVLTree {
                 else
                     node = doubleWithRightChild(node);
             }
-        } else {
-            ; // null statement (duplicate keys not allowed)
         }
         node.h = max(getHeight(node.leftChild), getHeight(node.rightChild)) + 1;
+        return node;
+    }
+
+    public void delete(int value) {
+        root = delete(root, value);
+    }
+
+    private Node delete(Node node, int value) {
+        if (node == null)
+            return null;
+
+        if (value < node.data) {
+            node.leftChild = delete(node.leftChild, value);
+        } else if (value > node.data) {
+            node.rightChild = delete(node.rightChild, value);
+        } else {
+            if (node.leftChild == null || node.rightChild == null) {
+                node = (node.leftChild == null) ? node.rightChild : node.leftChild;
+            } else {
+                Node temp = findMin(node.rightChild);
+                node.data = temp.data;
+                node.rightChild = delete(node.rightChild, temp.data);
+            }
+        }
+
+        if (node == null)
+            return node;
+
+        node.h = max(getHeight(node.leftChild), getHeight(node.rightChild)) + 1;
+
+        int balance = getHeight(node.leftChild) - getHeight(node.rightChild);
+
+        // Left heavy
+        if (balance > 1) {
+            if (getHeight(node.leftChild.leftChild) >= getHeight(node.leftChild.rightChild)) {
+                return rotateWithLeftChild(node);
+            } else {
+                return doubleWithLeftChild(node);
+            }
+        }
+
+        // Right heavy
+        if (balance < -1) {
+            if (getHeight(node.rightChild.rightChild) >= getHeight(node.rightChild.leftChild)) {
+                return rotateWithRightChild(node);
+            } else {
+                return doubleWithRightChild(node);
+            }
+        }
+
+        return node;
+    }
+
+    private Node findMin(Node node) {
+        while (node.leftChild != null) {
+            node = node.leftChild;
+        }
         return node;
     }
 
@@ -94,6 +151,24 @@ class ConstructAVLTree {
         return rotateWithRightChild(node1);
     }
 
+    public void inorderTraversalToFile(String fileName) {
+        StringBuilder sb = new StringBuilder();
+        inorderTraversalToFile(root, sb);
+        try (FileWriter writer = new FileWriter(fileName)) {
+            writer.write(sb.toString());
+        } catch (IOException e) {
+            System.out.println("Error Writing to file: " + e.getMessage());
+        }
+    }
+
+    private void inorderTraversalToFile(Node node, StringBuilder sb) {
+        if (node != null) {
+            inorderTraversalToFile(node.leftChild, sb);
+            sb.append(node.data).append("\n");
+            inorderTraversalToFile(node.rightChild, sb);
+        }
+    }
+
     public void inorderTraversal() {
         inorderTraversal(root);
     }
@@ -106,34 +181,10 @@ class ConstructAVLTree {
         }
     }
 
-    public void preorderTraversal() {
-        preorderTraversal(root);
-    }
-
-    private void preorderTraversal(Node node) {
-        if (node != null) {
-            System.out.print(node.data + " ");
-            preorderTraversal(node.leftChild);
-            preorderTraversal(node.rightChild);
-        }
-    }
-
-    public void postorderTraversal() {
-        postorderTraversal(root);
-    }
-
-    private void postorderTraversal(Node node) {
-        if (node != null) {
-            postorderTraversal(node.leftChild);
-            postorderTraversal(node.rightChild);
-            System.out.print(node.data + " ");
-        }
-    }
-
     public void search(int key) {
         Node n = search(root, key);
         if (n == null)
-            System.out.println("Key is not found in the Tree");
+            System.out.println("Key is not found in tree");
         else
             System.out.println("Key is found");
     }
@@ -146,127 +197,52 @@ class ConstructAVLTree {
         else
             return search(node.rightChild, key);
     }
-
-    // Deletion method
-    public void delete(int value) {
-        root = delete(root, value);
-    }
-
-    private Node delete(Node node, int value) {
-        if (node == null) {
-            System.out.println("Key not found in the tree");
-            return null;
-        }
-
-        if (value < node.data) {
-            node.leftChild = delete(node.leftChild, value);
-        } else if (value > node.data) {
-            node.rightChild = delete(node.rightChild, value);
-        } else {
-            // Node found
-            if (node.leftChild == null && node.rightChild == null) {
-                // No children (leaf node)
-                node = null;
-            } else if (node.leftChild == null) {
-                // One child (right child)
-                node = node.rightChild;
-            } else if (node.rightChild == null) {
-                // One child (left child)
-                node = node.leftChild;
-            } else {
-                // Two children
-                Node minNode = findMin(node.rightChild);
-                node.data = minNode.data;
-                node.rightChild = delete(node.rightChild, minNode.data);
-            }
-        }
-
-        if (node == null) return null;
-
-        // Update the height of the current node
-        node.h = max(getHeight(node.leftChild), getHeight(node.rightChild)) + 1;
-
-        // Check the balance factor and balance the tree if necessary
-        int balance = getHeight(node.leftChild) - getHeight(node.rightChild);
-
-        // Left-heavy subtree
-        if (balance > 1) {
-            if (getHeight(node.leftChild.leftChild) >= getHeight(node.leftChild.rightChild))
-                node = rotateWithLeftChild(node);
-            else
-                node = doubleWithLeftChild(node);
-        }
-        // Right-heavy subtree
-        else if (balance < -1) {
-            if (getHeight(node.rightChild.rightChild) >= getHeight(node.rightChild.leftChild))
-                node = rotateWithRightChild(node);
-            else
-                node = doubleWithRightChild(node);
-        }
-
-        return node;
-    }
-
-    private Node findMin(Node node) {
-        while (node.leftChild != null) {
-            node = node.leftChild;
-        }
-        return node;
-    }
 }
 
-public class AVL{
+public class AVL {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
-        ConstructAVLTree avl = new ConstructAVLTree();
-
+        ConstructAvlTree avl = new ConstructAvlTree();
         while (true) {
             System.out.println("1. Insert an element");
-            System.out.println("2. Search for an element");
-            System.out.println("3. Delete an element");
-            System.out.println("4. Inorder Traversal");
-            System.out.println("5. Preorder Traversal");
-            System.out.println("6. Postorder Traversal");
-            System.out.println("7. Exit");
-            System.out.print("Enter your choice: ");
+            System.out.println("2. Write Inorder Traversal to file");
+            System.out.println("3. Inorder Traversal");
+            System.out.println("4. Delete a number");
+            System.out.println("5. Search for an element");
+            System.out.println("6. Exit");
+            System.out.println("Enter your choice:");
             int ch = sc.nextInt();
-
             switch (ch) {
                 case 1:
-                    System.out.print("Enter element: ");
+                    System.out.println("Enter element:");
                     int item = sc.nextInt();
                     avl.insert(item);
                     break;
                 case 2:
-                    System.out.print("Enter the key element to search: ");
-                    int key = sc.nextInt();
-                    avl.search(key);
+                    System.out.println("Enter file name to save Inorder Traversal:");
+                    String fileName = sc.next();
+                    avl.inorderTraversalToFile(fileName);
+                    System.out.println("Inorder traversal written to " + fileName);
                     break;
                 case 3:
-                    System.out.print("Enter element to delete: ");
-                    int deleteKey = sc.nextInt();
-                    avl.delete(deleteKey);
-                    break;
-                case 4:
-                    System.out.println("Inorder Traversal:");
+                    System.out.println("Print Inorder Traversal:");
                     avl.inorderTraversal();
                     System.out.println();
                     break;
+                case 4:
+                    System.out.println("Delete a number:");
+                    int deleteValue = sc.nextInt();
+                    avl.delete(deleteValue);
+                    System.out.println("Deleted");
+                    break;
                 case 5:
-                    System.out.println("Preorder Traversal:");
-                    avl.preorderTraversal();
-                    System.out.println();
+                    System.out.println("Enter the key element to search:");
+                    int key = sc.nextInt();
+                    avl.search(key);
                     break;
                 case 6:
-                    System.out.println("Postorder Traversal:");
-                    avl.postorderTraversal();
-                    System.out.println();
-                    break;
-                case 7:
                     System.exit(0);
-                    break;
             }
         }
     }
 }
-
