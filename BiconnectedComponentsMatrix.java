@@ -1,6 +1,6 @@
 import java.util.*;
 
-public class BiconnectedComponents {
+public class BiconnectedComponentsMatrix {
     private int time = 0;
     private List<int[]> edgeStack = new ArrayList<>();
 
